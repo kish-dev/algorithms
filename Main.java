@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -51,24 +52,26 @@ public class Main {
         return countMR;
     }
 
-    //TODO: доработать разделяющую процедуру(которая вернет только на 1 этапе индексы элементов
-    //TODO: затем надо будет найти медиану этого массива
-    //TODO: изи
+    public static Pair divide(int[] array, int k, int left, int right, int index) {
+        int randomIndex = 0;
+        if (index == -1) {
+            randomIndex = (int) (Math.random() * (right - left - 1));    //смещение индекса
+        } else {
+            randomIndex = index;
+        }
 
-    public static int select(int[] array, int k, int left, int right) {
-        int randomIndex = (int) (Math.random() * (right - left - 1));   //смещение индекса
         int elemAtRandomIndex = array[randomIndex + left];   //смещение индекса
-        int postIndex = 0;      //количество меньших элементов
+        int postLess = 0;      //количество меньших элементов
 
         for (int i = left; i < right; ++i) {
             if (array[i] < elemAtRandomIndex) {
                 int temp = array[i];
-                array[i] = array[postIndex + left];
-                array[postIndex + left] = temp;
-                ++postIndex;
+                array[i] = array[postLess + left];
+                array[postLess + left] = temp;
+                ++postLess;
             }
         }
-        int postEqual = postIndex;      // количество меньших или равных
+        int postEqual = postLess;      // количество меньших или равных
 
         for (int i = postEqual + left; i < right && postEqual + left < right; ++i) {
             if (array[i] == elemAtRandomIndex) {
@@ -78,13 +81,26 @@ public class Main {
                 ++postEqual;
             }
         }
+        if (index != -1) {
+            System.out.println(Arrays.toString(array));
+            System.out.println(postLess + " " + (postEqual - 1));
+        }
+        return new Pair(postLess, postEqual);
+    }
 
-        if (k <= postIndex) {
-            return select(array, k, left, postIndex + left);
+    public static int select(int[] array, int k, int left, int right, int index) {
+
+        Pair pair = divide(array, k, left, right, index);
+
+        int postLess = pair.getPostLess();
+        int postEqual = pair.getPostEqual();
+
+        if (k <= postLess) {
+            return select(array, k, left, postLess + left, -1);
         }
 
         if (k > postEqual) {
-            return select(array, k - postEqual, postEqual + left, right);
+            return select(array, k - postEqual, postEqual + left, right, -1);
         }
 
         return array[postEqual - 1 + left];
@@ -94,18 +110,21 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         int n = scanner.nextInt();
 
-
         int[] array = new int[n];
 
         for (int i = 0; i < n; ++i) {
             array[i] = scanner.nextInt();
         }
 
-        int k = scanner.nextInt();
+        int index = scanner.nextInt();
 
-        int k1 = select(array, k, 0, array.length);
+        int indexOfMedian = array.length / 2;
+        if(array.length % 2 != 0)
+        {
+            ++indexOfMedian;
+        }
 
-        System.out.print(select(array, array.length + 1 - k, 0, array.length));
+        System.out.print("median: " + select(array, indexOfMedian, 0, array.length, index));
 //        System.out.println("mediana: " + k1);
 
 //        int k = majorityRepresentative(array, 0, array.length - 1);
@@ -114,6 +133,24 @@ public class Main {
     }
 }
 
+class Pair {
+
+    private final int postLess;
+    private final int postEqual;
+
+    public Pair(int postLess, int postEqual) {
+        this.postLess = postLess;
+        this.postEqual = postEqual;
+    }
+
+    public int getPostLess() {
+        return postLess;
+    }
+
+    public int getPostEqual() {
+        return postEqual;
+    }
+}
 
 
 
