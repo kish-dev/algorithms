@@ -3,29 +3,28 @@ package com.company;
 import java.util.Arrays;
 import java.util.Scanner;
 
+
 public class Main {
 
-    public static int majorityRepresentative(int[] array,
-                                             int leftIndex, int rightIndex) {
+    public static double majorityRepresentative(int[] array,
+                                                int leftIndex, int rightIndex) {
         //right index is arrayLength - 1
         if (rightIndex - leftIndex > 0) {
             int mid = (rightIndex + leftIndex) / 2;
-            int majorRepFirst = majorityRepresentative(array, leftIndex, mid);
-            int majorRepSecond = majorityRepresentative(array, mid + 1, rightIndex);
+            double majorRepFirst = majorityRepresentative(array, leftIndex, mid);
+            double majorRepSecond = majorityRepresentative(array, mid + 1, rightIndex);
 
             int countMR1 = 0;   //константное число операций
             int countMR2 = 0;   //константное число операций
 
-            if (majorRepFirst != -1) {  //n операций
+            if (!Double.isNaN(majorRepFirst)) {  //c*n операций
                 countMR1 = getCountMR(array, leftIndex, rightIndex, mid, majorRepFirst, countMR1);
             }
-            if (majorRepSecond != -1 && majorRepFirst != majorRepSecond) { //n операций
+            if (!Double.isNaN(majorRepSecond)) { //c*n операций
                 countMR2 = getCountMR(array, leftIndex, rightIndex, mid, majorRepSecond, countMR2);
             }
 
-            int half = (rightIndex - leftIndex + 1) / 2; //константное число операций
-
-            int halfOfElements = (half % 2 == 0) ? half : half - 1; //константное число операций
+            int half = (rightIndex - leftIndex + 1) / 2; //количество элементов в массиве / 2
 
             if (countMR1 >= half + 1) {     //константное число операций
                 return majorRepFirst;
@@ -33,12 +32,12 @@ public class Main {
             if (countMR2 >= half + 1) {     //константное число операций
                 return majorRepSecond;
             }
-            return -1;
+            return Double.NaN;
         }
         return array[leftIndex];
     }
 
-    private static int getCountMR(int[] array, int leftIndex, int rightIndex, int mid, int majorRep, int countMR) {
+    private static int getCountMR(int[] array, int leftIndex, int rightIndex, int mid, double majorRep, int countMR) {
         for (int i = leftIndex; i <= mid; ++i) {
             if (majorRep == array[i]) {
                 ++countMR;
@@ -52,8 +51,26 @@ public class Main {
         return countMR;
     }
 
-    public static Pair divide(int[] array, int k, int left, int right, int index) {
-        int randomIndex = 0;
+    public static int select(int[] array, int k, int left, int right, int index) {
+
+        Pair pair = divide(array, left, right, index);
+
+        int postLess = pair.getPostLess();
+        int postEqual = pair.getPostEqual();
+
+        if (k <= postLess) {
+            return select(array, k, left, postLess + left, -1);
+        }
+
+        if (k > postEqual) {
+            return select(array, k - postEqual, postEqual + left, right, -1);
+        }
+
+        return array[postEqual - 1 + left];
+    }
+
+    public static Pair divide(int[] array, int left, int right, int index) {
+        int randomIndex;
         if (index == -1) {
             randomIndex = (int) (Math.random() * (right - left - 1));    //смещение индекса
         } else {
@@ -82,31 +99,33 @@ public class Main {
             }
         }
         if (index != -1) {
-            System.out.println(Arrays.toString(array));
-            System.out.println(postLess + " " + (postEqual - 1));
+            for (int j : array) {
+                System.out.print(j + " ");
+            }
+            System.out.println("\n" + postLess + " " + (postEqual - 1));
         }
         return new Pair(postLess, postEqual);
     }
 
-    public static int select(int[] array, int k, int left, int right, int index) {
+    public static void task2() {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
 
-        Pair pair = divide(array, k, left, right, index);
+        int[] array = new int[n];
 
-        int postLess = pair.getPostLess();
-        int postEqual = pair.getPostEqual();
-
-        if (k <= postLess) {
-            return select(array, k, left, postLess + left, -1);
+        for (int i = 0; i < n; ++i) {
+            array[i] = scanner.nextInt();
         }
 
-        if (k > postEqual) {
-            return select(array, k - postEqual, postEqual + left, right, -1);
+        double k = majorityRepresentative(array, 0, array.length - 1);
+        if (!Double.isNaN(k)) {
+            System.out.println((int) k);
+        } else {
+            System.out.println(k);
         }
-
-        return array[postEqual - 1 + left];
     }
 
-    public static void main(String[] args) {
+    public static void task3() {
         Scanner scanner = new Scanner(System.in);
         int n = scanner.nextInt();
 
@@ -119,17 +138,18 @@ public class Main {
         int index = scanner.nextInt();
 
         int indexOfMedian = array.length / 2;
-        if(array.length % 2 != 0)
-        {
+        if (array.length % 2 != 0) {
             ++indexOfMedian;
         }
 
         System.out.print("median: " + select(array, indexOfMedian, 0, array.length, index));
-//        System.out.println("mediana: " + k1);
+    }
 
-//        int k = majorityRepresentative(array, 0, array.length - 1);
-//
-//        System.out.println(k);
+
+    public static void main(String[] args) {
+//        task2();
+        task3();
+
     }
 }
 
