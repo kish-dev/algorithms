@@ -4,14 +4,15 @@ import java.util.*;
 
 class Graph {
     private int vertexes;
-
-    private final LinkedList<Integer>[] adj;
+    //HashSet, потому что добавление за константу,
+    //множество остается уникальным, что нужно для meta-graph
+    private final HashSet<Integer>[] adj;
 
     Graph(int v) {
         vertexes = v;
-        adj = new LinkedList[v];
+        adj = new HashSet[v];
         for (int i = 0; i < v; ++i)
-            adj[i] = new LinkedList();
+            adj[i] = new HashSet();
     }
 
     void addEdge(int root, int outGoing) {
@@ -22,7 +23,7 @@ class Graph {
         Graph graphReverse = new Graph(vertexes);
 
         for (int i = 0; i < vertexes; ++i) {
-            Iterator<Integer> j = this.adj[i].listIterator();
+            Iterator<Integer> j = this.adj[i].iterator();
             while (j.hasNext()) {
                 int root = j.next();
                 graphReverse.adj[root].add(i);
@@ -34,7 +35,7 @@ class Graph {
     void reverseVisit(LinkedList<Integer> list, int v, boolean[] visited) {
         visited[v] = true;
 
-        Iterator<Integer> i = adj[v].listIterator();
+        Iterator<Integer> i = adj[v].iterator();
         while (i.hasNext()) {
             int n = i.next();
             if (!visited[n]) {
@@ -62,7 +63,7 @@ class Graph {
         visited[v] = true;
         preVisitGraph(v, numSCC, curSCC);
 
-        Iterator<Integer> i = adj[v].listIterator();
+        Iterator<Integer> i = adj[v].iterator();
         while (i.hasNext()) {
             int n = i.next();
             if (!visited[n]) {
@@ -85,31 +86,19 @@ class Graph {
 
     Graph getMetaGraph(int[] numSCC, int countSCC) {
         Graph metaGraph = new Graph(countSCC);
-        HashSet<Integer>[] hashSets = new HashSet[countSCC];
-        for(int i = 0; i < countSCC; ++i) {
-            hashSets[i] = new HashSet<>();
-        }
         for (int i = 0; i < adj.length; ++i) {
-            Iterator<Integer> j = adj[i].listIterator();
+            Iterator<Integer> j = adj[i].iterator();
             int root = i;
             while (j.hasNext()) {
                 int vertex = j.next();
-                if (numSCC[root] != numSCC[vertex] && hashSets[numSCC[root]].add(numSCC[vertex])) {
+                if (numSCC[root] != numSCC[vertex]) {
+                    //добавляем за константу и возвращаем true, если нет элемента, если элемент есть,
+                    //за константу возвращает false
                     metaGraph.adj[numSCC[root]].add(numSCC[vertex]);
+
                 }
             }
         }
-        System.out.println("Meta-graph HashSet");
-        for (int i = 0; i < countSCC; ++i) {
-            Iterator<Integer> iterator = hashSets[i].iterator();
-            System.out.print(i + "   ");
-            while(iterator.hasNext()) {
-                int vertex = iterator.next();
-                System.out.print(vertex + " ");
-            }
-            System.out.println();
-        }
-        System.out.println("\n\n\n\n");
         return metaGraph;
     }
 
@@ -127,7 +116,7 @@ class Graph {
 
     void print() {
         for (int i = 0; i < this.adj.length; ++i) {
-            Iterator<Integer> j = this.adj[i].listIterator();
+            Iterator<Integer> j = this.adj[i].iterator();
             System.out.print(i + "   ");
             while (j.hasNext()) {
                 int vertex = j.next();
